@@ -1,5 +1,7 @@
 package com.daydream.shortlink.admin.controller;
 
+import com.daydream.shortlink.admin.common.convention.result.Result;
+import com.daydream.shortlink.admin.common.convention.result.Results;
 import com.daydream.shortlink.admin.dto.resp.UserRespDTO;
 import com.daydream.shortlink.admin.service.UserService;
 import lombok.RequiredArgsConstructor;
@@ -18,7 +20,7 @@ public class UserController {
     private final UserService userService;
 
     @GetMapping("/api/shortlink/v1/user/{username}")
-    public UserRespDTO getUserByUsername(@PathVariable("username") String username) {
-        return userService.getUserByUsername(username);
+    public Result<UserRespDTO> getUserByUsername(@PathVariable("username") String username) {
+        return Results.success(userService.getUserByUsername(username));
     }
 }
