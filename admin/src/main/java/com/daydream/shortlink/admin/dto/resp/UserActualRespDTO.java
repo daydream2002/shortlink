@@ -1,7 +1,5 @@
 package com.daydream.shortlink.admin.dto.resp;
 
-import com.daydream.shortlink.admin.common.serialize.PhoneDesensitizationSerializer;
-import com.fasterxml.jackson.databind.annotation.JsonSerialize;
 import lombok.Data;
 
 /**
@@ -10,7 +8,7 @@ import lombok.Data;
  * Date 2024/12/31 15:24
  */
 @Data
-public class UserRespDTO {
+public class UserActualRespDTO {
     /**
      * ID
      */
@@ -29,7 +27,6 @@ public class UserRespDTO {
     /**
      * 手机号
      */
-    @JsonSerialize(using = PhoneDesensitizationSerializer.class)
     private String phone;
 
     /**
