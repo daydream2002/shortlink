@@ -2,6 +2,7 @@ package com.daydream.shortlink.admin.service.impl;
 
 import cn.hutool.core.bean.BeanUtil;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
+import com.baomidou.mybatisplus.core.conditions.update.LambdaUpdateWrapper;
 import com.baomidou.mybatisplus.core.toolkit.Wrappers;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import com.daydream.shortlink.admin.common.convention.exception.ClientException;
@@ -9,6 +10,7 @@ import com.daydream.shortlink.admin.common.enums.UserErrorCodeEnum;
 import com.daydream.shortlink.admin.dao.entity.UserDO;
 import com.daydream.shortlink.admin.dao.mapper.UserMapper;
 import com.daydream.shortlink.admin.dto.req.UserRegisterReqDTO;
+import com.daydream.shortlink.admin.dto.req.UserUpdateReqDTO;
 import com.daydream.shortlink.admin.dto.resp.UserRespDTO;
 import com.daydream.shortlink.admin.service.UserService;
 import lombok.RequiredArgsConstructor;
@@ -65,8 +67,15 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, UserDO> implements 
                 return;
             }
             throw new ClientException(USER_NAME_EXIST);
-        }finally {
+        } finally {
             lock.unlock();
         }
+    }
+
+    @Override
+    public void update(UserUpdateReqDTO userUpdateReqDTO) {
+        this.update(BeanUtil.toBean(userUpdateReqDTO, UserDO.class),
+                new LambdaUpdateWrapper<>(UserDO.class).eq(UserDO::getUsername, userUpdateReqDTO.getUsername()));
+
     }
 }
