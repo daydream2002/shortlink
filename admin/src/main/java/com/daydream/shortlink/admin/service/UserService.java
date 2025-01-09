@@ -2,8 +2,10 @@ package com.daydream.shortlink.admin.service;
 
 import com.baomidou.mybatisplus.extension.service.IService;
 import com.daydream.shortlink.admin.dao.entity.UserDO;
+import com.daydream.shortlink.admin.dto.req.UserLoginReqDTO;
 import com.daydream.shortlink.admin.dto.req.UserRegisterReqDTO;
 import com.daydream.shortlink.admin.dto.req.UserUpdateReqDTO;
+import com.daydream.shortlink.admin.dto.resp.UserLoginRespDTO;
 import com.daydream.shortlink.admin.dto.resp.UserRespDTO;
 
 /**
@@ -31,4 +33,8 @@ public interface UserService extends IService<UserDO> {
     void register(UserRegisterReqDTO userRegisterReqDTO);
 
     void update(UserUpdateReqDTO userUpdateReqDTO);
+
+    UserLoginRespDTO login(UserLoginReqDTO userLoginReqDTO);
+
+    Boolean checkLogin(String username, String token);
 }
