@@ -6,7 +6,7 @@ package com.daydream.shortlink.admin.config;
  * Date 2025/1/9 20:21
  */
 
-import com.daydream.shortlink.admin.biz.user.UserTransmitFilter;
+import com.daydream.shortlink.admin.common.biz.user.UserTransmitFilter;
 import org.springframework.boot.web.servlet.FilterRegistrationBean;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;

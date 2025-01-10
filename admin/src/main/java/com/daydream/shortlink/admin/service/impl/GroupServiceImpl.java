@@ -3,7 +3,7 @@ package com.daydream.shortlink.admin.service.impl;
 import cn.hutool.core.bean.BeanUtil;
 import com.baomidou.mybatisplus.core.toolkit.Wrappers;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
-import com.daydream.shortlink.admin.biz.user.UserContext;
+import com.daydream.shortlink.admin.common.biz.user.UserContext;
 import com.daydream.shortlink.admin.common.database.BaseDO;
 import com.daydream.shortlink.admin.dao.entity.GroupDO;
 import com.daydream.shortlink.admin.dao.mapper.GroupMapper;

@@ -1,4 +1,4 @@
-package com.daydream.shortlink.admin.biz.user;
+package com.daydream.shortlink.admin.common.biz.user;
 
 /**
  * Author daydream

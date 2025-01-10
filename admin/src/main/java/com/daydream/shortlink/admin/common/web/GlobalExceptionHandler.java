@@ -1,4 +1,4 @@
-package com.daydream.shortlink.admin.common.convention.web;
+package com.daydream.shortlink.admin.common.web;
 
 /**
  * Author daydream
