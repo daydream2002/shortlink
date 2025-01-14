@@ -10,6 +10,7 @@ import com.daydream.shortlink.project.dao.mapper.ShortLinkMapper;
 import com.daydream.shortlink.project.dto.req.ShortLinkCreateReqDTO;
 import com.daydream.shortlink.project.dto.req.ShortLinkPageReqDTO;
 import com.daydream.shortlink.project.dto.resp.ShortLinkCreateRespDTO;
+import com.daydream.shortlink.project.dto.resp.ShortLinkGroupCountQueryRespDTO;
 import com.daydream.shortlink.project.dto.resp.ShortLinkPageRespDTO;
 import com.daydream.shortlink.project.service.ShortLinkService;
 import com.daydream.shortlink.project.toolkit.HashUtil;
@@ -17,6 +18,9 @@ import lombok.RequiredArgsConstructor;
 import org.redisson.api.RBloomFilter;
 import org.springframework.dao.DuplicateKeyException;
 import org.springframework.stereotype.Service;
+
+import java.util.List;
+import java.util.Map;
 
 /**
  * Author daydream
@@ -61,6 +65,16 @@ public class ShortLinkServiceImpl extends ServiceImpl<ShortLinkMapper, ShortLink
                 .eq(ShortLinkDO::getDelFlag, 0)
                 .orderByDesc(ShortLinkDO::getCreateTime));
         return page.convert(item -> BeanUtil.toBean(item, ShortLinkPageRespDTO.class));
+    }
+
+    @Override
+    public List<ShortLinkGroupCountQueryRespDTO> listGroupShortLinkCount(List<String> requestParam) {
+        List<Map<String, Object>> ShortLinkDOList = listMaps(Wrappers.query(new ShortLinkDO())
+                .select("gid, count(*) as shortLinkCount")
+                .in("gid", requestParam)
+                .eq("enable_status", 0)
+                .groupBy("gid"));
+        return BeanUtil.copyToList(ShortLinkDOList, ShortLinkGroupCountQueryRespDTO.class);
     }
 
     private String generateSuffix(ShortLinkCreateReqDTO shortLinkCreateReqDTO) {

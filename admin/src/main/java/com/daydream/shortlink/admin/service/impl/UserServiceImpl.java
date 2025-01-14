@@ -16,19 +16,21 @@ import com.daydream.shortlink.admin.dto.req.UserRegisterReqDTO;
 import com.daydream.shortlink.admin.dto.req.UserUpdateReqDTO;
 import com.daydream.shortlink.admin.dto.resp.UserLoginRespDTO;
 import com.daydream.shortlink.admin.dto.resp.UserRespDTO;
+import com.daydream.shortlink.admin.service.GroupService;
 import com.daydream.shortlink.admin.service.UserService;
 import lombok.RequiredArgsConstructor;
 import org.redisson.api.RBloomFilter;
 import org.redisson.api.RLock;
 import org.redisson.api.RedissonClient;
 import org.springframework.beans.BeanUtils;
+import org.springframework.dao.DuplicateKeyException;
 import org.springframework.data.redis.core.StringRedisTemplate;
 import org.springframework.stereotype.Service;
 
 import java.util.concurrent.TimeUnit;
 
 import static com.daydream.shortlink.admin.common.constant.RedisCacheConstant.LOCK_USER_REGISTER_KEY;
-import static com.daydream.shortlink.admin.common.enums.UserErrorCodeEnum.USER_NAME_EXIST;
+import static com.daydream.shortlink.admin.common.enums.UserErrorCodeEnum.*;
 
 /**
  * Author daydream
@@ -41,6 +43,7 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, UserDO> implements 
     private final RBloomFilter<String> userRegisterCachePenetrationBloomFilter;
     private final RedissonClient redissonClient;
     private final StringRedisTemplate stringRedisTemplate;
+    private final GroupService groupService;
 
     @Override
     public UserRespDTO getUserByUsername(String username) {
@@ -67,11 +70,16 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, UserDO> implements 
         RLock lock = redissonClient.getLock(LOCK_USER_REGISTER_KEY + userRegisterReqDTO.getUsername());
         try {
             if (lock.tryLock()) {
-                boolean saved = this.save(BeanUtil.toBean(userRegisterReqDTO, UserDO.class));
-                if (!saved) {
-                    throw new ClientException(UserErrorCodeEnum.USER_SAVE_ERROR);
+                try {
+                    boolean saved = this.save(BeanUtil.toBean(userRegisterReqDTO, UserDO.class));
+                    if (!saved) {
+                        throw new ClientException(USER_SAVE_ERROR);
+                    }
+                } catch (DuplicateKeyException e) {
+                    throw new ClientException(USER_EXIST);
                 }
                 userRegisterCachePenetrationBloomFilter.add(userRegisterReqDTO.getUsername());
+                groupService.saveGroup(userRegisterReqDTO.getUsername(),"默认分组");
                 return;
             }
             throw new ClientException(USER_NAME_EXIST);
@@ -83,8 +91,8 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, UserDO> implements 
     @Override
     public void update(UserUpdateReqDTO userUpdateReqDTO) {
         this.update(BeanUtil.toBean(userUpdateReqDTO, UserDO.class),
-                new LambdaUpdateWrapper<>(UserDO.class).eq(UserDO::getUsername, userUpdateReqDTO.getUsername()));
-
+                new LambdaUpdateWrapper<>(UserDO.class)
+                        .eq(UserDO::getUsername, userUpdateReqDTO.getUsername()));
     }
 
     @Override

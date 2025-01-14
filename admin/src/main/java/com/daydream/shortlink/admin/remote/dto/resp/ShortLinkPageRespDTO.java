@@ -1,4 +1,4 @@
-package com.daydream.shortlink.project.dto.resp;
+package com.daydream.shortlink.admin.remote.dto.resp;
 
 import com.fasterxml.jackson.annotation.JsonFormat;
 import lombok.Builder;
