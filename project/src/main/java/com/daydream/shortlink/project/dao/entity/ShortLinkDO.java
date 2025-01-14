@@ -9,7 +9,10 @@ package com.daydream.shortlink.project.dao.entity;
 import com.baomidou.mybatisplus.annotation.TableField;
 import com.baomidou.mybatisplus.annotation.TableName;
 import com.daydream.shortlink.project.common.database.BaseDO;
+import lombok.AllArgsConstructor;
+import lombok.Builder;
 import lombok.Data;
+import lombok.NoArgsConstructor;
 
 import java.util.Date;
 
@@ -18,6 +21,9 @@ import java.util.Date;
  */
 @Data
 @TableName("t_link")
+@Builder
+@NoArgsConstructor
+@AllArgsConstructor
 public class ShortLinkDO extends BaseDO {
 
     /**
@@ -80,5 +86,9 @@ public class ShortLinkDO extends BaseDO {
      */
     @TableField("`describe`")
     private String describe;
+    /**
+     * 网站标识
+     */
+    private String favicon;
 }
 
