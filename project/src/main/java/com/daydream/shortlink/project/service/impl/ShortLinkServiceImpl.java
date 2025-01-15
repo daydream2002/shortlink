@@ -21,6 +21,7 @@ import com.daydream.shortlink.project.dto.resp.ShortLinkGroupCountQueryRespDTO;
 import com.daydream.shortlink.project.dto.resp.ShortLinkPageRespDTO;
 import com.daydream.shortlink.project.service.ShortLinkService;
 import com.daydream.shortlink.project.toolkit.HashUtil;
+import com.daydream.shortlink.project.toolkit.LinkUtil;
 import jakarta.servlet.ServletRequest;
 import jakarta.servlet.ServletResponse;
 import jakarta.servlet.http.HttpServletResponse;
@@ -76,6 +77,11 @@ public class ShortLinkServiceImpl extends ServiceImpl<ShortLinkMapper, ShortLink
                 throw new ServiceException("短链接生成重复");
             }
         }
+        stringRedisTemplate.opsForValue().set(
+                String.format(GOTO_SHORT_LINK_KEY, shortLinkDO.getFullShortUrl()),
+                shortLinkCreateReqDTO.getOriginUrl(),
+                LinkUtil.getLinkCacheValidTime(shortLinkCreateReqDTO.getValidDate()), TimeUnit.MILLISECONDS
+        );
         shortUriCreateCachePenetrationBloomFilter.add(shortLinkDO.getFullShortUrl());
         return ShortLinkCreateRespDTO
                 .builder()
