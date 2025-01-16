@@ -14,6 +14,7 @@ import com.daydream.shortlink.admin.common.convention.result.Result;
 import com.daydream.shortlink.admin.dto.req.RecycleBinSaveReqDTO;
 import com.daydream.shortlink.admin.remote.dto.req.ShortLinkCreateReqDTO;
 import com.daydream.shortlink.admin.remote.dto.req.ShortLinkPageReqDTO;
+import com.daydream.shortlink.admin.remote.dto.req.ShortLinkRecycleBinPageReqDTO;
 import com.daydream.shortlink.admin.remote.dto.req.ShortLinkUpdateReqDTO;
 import com.daydream.shortlink.admin.remote.dto.resp.ShortLinkCreateRespDTO;
 import com.daydream.shortlink.admin.remote.dto.resp.ShortLinkGroupCountQueryRespDTO;
@@ -98,5 +99,15 @@ public interface ShortLinkRemoteService {
      */
     default void saveRecycleBin(RecycleBinSaveReqDTO requestParam) {
         HttpUtil.post("http://127.0.0.1:8001/api/short-link/v1/recycle-bin/save", JSON.toJSONString(requestParam));
+    }
+
+    default Result<IPage<ShortLinkPageRespDTO>> pageRecycleBinShortLink(ShortLinkRecycleBinPageReqDTO requestParam) {
+        Map<String, Object> requestMap = new HashMap<>();
+        requestMap.put("gidList", requestParam.getGidList());
+        requestMap.put("current", requestParam.getCurrent());
+        requestMap.put("size", requestParam.getSize());
+        String resultPageStr = HttpUtil.get("http://127.0.0.1:8001/api/short-link/v1/recycle-bin/page", requestMap);
+        return JSON.parseObject(resultPageStr, new TypeReference<>() {
+        });
     }
 }
