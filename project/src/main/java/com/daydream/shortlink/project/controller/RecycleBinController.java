@@ -10,6 +10,7 @@ import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.daydream.shortlink.project.common.convention.result.Result;
 import com.daydream.shortlink.project.common.convention.result.Results;
 import com.daydream.shortlink.project.dto.req.RecycleBinRecoverReqDTO;
+import com.daydream.shortlink.project.dto.req.RecycleBinRemoveReqDTO;
 import com.daydream.shortlink.project.dto.req.RecycleBinSaveReqDTO;
 import com.daydream.shortlink.project.dto.req.ShortLinkRecycleBinPageReqDTO;
 import com.daydream.shortlink.project.dto.resp.ShortLinkPageRespDTO;
@@ -50,6 +51,14 @@ public class RecycleBinController {
     @PostMapping("/api/short-link/v1/recycle-bin/recover")
     public Result<Void> recoverRecycleBin(@RequestBody RecycleBinRecoverReqDTO requestParam) {
         recycleBinService.recoverRecycleBin(requestParam);
+        return Results.success();
+    }
+     /**
+     * 移除短链接
+     */
+    @PostMapping("/api/short-link/v1/recycle-bin/remove")
+    public Result<Void> removeRecycleBin(@RequestBody RecycleBinRemoveReqDTO requestParam) {
+        recycleBinService.removeRecycleBin(requestParam);
         return Results.success();
     }
 }

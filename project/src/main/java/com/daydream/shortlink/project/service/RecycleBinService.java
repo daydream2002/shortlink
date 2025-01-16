@@ -4,6 +4,7 @@ import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.baomidou.mybatisplus.extension.service.IService;
 import com.daydream.shortlink.project.dao.entity.ShortLinkDO;
 import com.daydream.shortlink.project.dto.req.RecycleBinRecoverReqDTO;
+import com.daydream.shortlink.project.dto.req.RecycleBinRemoveReqDTO;
 import com.daydream.shortlink.project.dto.req.RecycleBinSaveReqDTO;
 import com.daydream.shortlink.project.dto.req.ShortLinkRecycleBinPageReqDTO;
 import com.daydream.shortlink.project.dto.resp.ShortLinkPageRespDTO;
@@ -19,4 +20,6 @@ public interface RecycleBinService extends IService<ShortLinkDO> {
     IPage<ShortLinkPageRespDTO> pageShortLink(ShortLinkRecycleBinPageReqDTO requestParam);
 
     void recoverRecycleBin(RecycleBinRecoverReqDTO requestParam);
+
+    void removeRecycleBin(RecycleBinRemoveReqDTO requestParam);
 }
