@@ -1,4 +1,4 @@
-# 数据源集合
+    # 数据源集合
 dataSources:
   ds_0:
     dataSourceClassName: com.zaxxer.hikari.HikariDataSource
