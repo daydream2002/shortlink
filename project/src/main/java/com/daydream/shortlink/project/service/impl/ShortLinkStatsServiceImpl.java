@@ -7,6 +7,9 @@ package com.daydream.shortlink.project.service.impl;
  */
 
 import cn.hutool.core.bean.BeanUtil;
+import cn.hutool.core.collection.CollUtil;
+import cn.hutool.core.date.DateField;
+import cn.hutool.core.date.DateUtil;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.baomidou.mybatisplus.core.toolkit.Wrappers;
@@ -39,8 +42,37 @@ public class ShortLinkStatsServiceImpl implements ShortLinkStatsService {
 
     @Override
     public ShortLinkStatsRespDTO oneShortLinkStats(ShortLinkStatsReqDTO requestParam) {
-        // 基础访问详情
         List<LinkAccessStatsDO> listStatsByShortLink = linkAccessStatsMapper.listStatsByShortLink(requestParam);
+        if (CollUtil.isEmpty(listStatsByShortLink)) {
+            return null;
+        }
+        // 基础访问数据
+        LinkAccessStatsDO pvUvUidStatsByShortLink = linkAccessLogsMapper.findPvUvUidStatsByShortLink(requestParam);
+        // 基础访问详情
+        List<ShortLinkStatsAccessDailyRespDTO> daily = new ArrayList<>();
+        List<String> rangeDates = DateUtil.rangeToList(DateUtil.parse(requestParam.getStartDate()), DateUtil.parse(requestParam.getEndDate()), DateField.DAY_OF_MONTH).stream()
+                .map(DateUtil::formatDate)
+                .toList();
+        rangeDates.forEach(each -> listStatsByShortLink.stream()
+                .filter(item -> Objects.equals(each, DateUtil.formatDate(item.getDate())))
+                .findFirst()
+                .ifPresentOrElse(item -> {
+                    ShortLinkStatsAccessDailyRespDTO accessDailyRespDTO = ShortLinkStatsAccessDailyRespDTO.builder()
+                            .date(each)
+                            .pv(item.getPv())
+                            .uv(item.getUv())
+                            .uip(item.getUip())
+                            .build();
+                    daily.add(accessDailyRespDTO);
+                }, () -> {
+                    ShortLinkStatsAccessDailyRespDTO accessDailyRespDTO = ShortLinkStatsAccessDailyRespDTO.builder()
+                            .date(each)
+                            .pv(0)
+                            .uv(0)
+                            .uip(0)
+                            .build();
+                    daily.add(accessDailyRespDTO);
+                }));
         // 地区访问详情（仅国内）
         List<ShortLinkStatsLocaleCNRespDTO> localeCnStats = new ArrayList<>();
         List<LinkLocaleStatsDO> listedLocaleByShortLink = linkLocaleStatsMapper.listLocaleByShortLink(requestParam);
@@ -126,8 +158,18 @@ public class ShortLinkStatsServiceImpl implements ShortLinkStatsService {
         // 访客访问类型详情
         List<ShortLinkStatsUvRespDTO> uvTypeStats = new ArrayList<>();
         HashMap<String, Object> findUvTypeByShortLink = linkAccessLogsMapper.findUvTypeCntByShortLink(requestParam);
-        int oldUserCnt = Integer.parseInt(findUvTypeByShortLink.get("oldUserCnt").toString());
-        int newUserCnt = Integer.parseInt(findUvTypeByShortLink.get("newUserCnt").toString());
+        int oldUserCnt = Integer.parseInt(
+                Optional.ofNullable(findUvTypeByShortLink)
+                        .map(each -> each.get("oldUserCnt"))
+                        .map(Object::toString)
+                        .orElse("0")
+        );
+        int newUserCnt = Integer.parseInt(
+                Optional.ofNullable(findUvTypeByShortLink)
+                        .map(each -> each.get("newUserCnt"))
+                        .map(Object::toString)
+                        .orElse("0")
+        );
         int uvSum = oldUserCnt + newUserCnt;
         double oldRatio = (double) oldUserCnt / uvSum;
         double actualOldRatio = Math.round(oldRatio * 100.0) / 100.0;
@@ -178,7 +220,10 @@ public class ShortLinkStatsServiceImpl implements ShortLinkStatsService {
             networkStats.add(networkRespDTO);
         });
         return ShortLinkStatsRespDTO.builder()
-                .daily(BeanUtil.copyToList(listStatsByShortLink, ShortLinkStatsAccessDailyRespDTO.class))
+                .pv(pvUvUidStatsByShortLink.getPv())
+                .uv(pvUvUidStatsByShortLink.getUv())
+                .uip(pvUvUidStatsByShortLink.getUip())
+                .daily(daily)
                 .localeCnStats(localeCnStats)
                 .hourStats(hourStats)
                 .topIpStats(topIpStats)
