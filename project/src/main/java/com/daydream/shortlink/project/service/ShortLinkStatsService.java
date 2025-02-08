@@ -6,7 +6,10 @@ package com.daydream.shortlink.project.service;
  * Date 2025/2/7 17:10
  */
 
+import com.baomidou.mybatisplus.core.metadata.IPage;
+import com.daydream.shortlink.project.dto.req.ShortLinkStatsAccessRecordReqDTO;
 import com.daydream.shortlink.project.dto.req.ShortLinkStatsReqDTO;
+import com.daydream.shortlink.project.dto.resp.ShortLinkStatsAccessRecordRespDTO;
 import com.daydream.shortlink.project.dto.resp.ShortLinkStatsRespDTO;
 
 /**
@@ -21,4 +24,6 @@ public interface ShortLinkStatsService {
      * @return 短链接监控数据
      */
     ShortLinkStatsRespDTO oneShortLinkStats(ShortLinkStatsReqDTO requestParam);
+
+    IPage<ShortLinkStatsAccessRecordRespDTO> shortLinkStatsAccessRecord(ShortLinkStatsAccessRecordReqDTO requestParam);
 }
