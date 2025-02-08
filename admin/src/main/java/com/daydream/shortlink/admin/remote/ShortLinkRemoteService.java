@@ -6,6 +6,7 @@ package com.daydream.shortlink.admin.remote;
  * Date 2025/1/13 16:42
  */
 
+import cn.hutool.core.bean.BeanUtil;
 import cn.hutool.http.HttpUtil;
 import com.alibaba.fastjson2.JSON;
 import com.alibaba.fastjson2.TypeReference;
@@ -14,13 +15,11 @@ import com.daydream.shortlink.admin.common.convention.result.Result;
 import com.daydream.shortlink.admin.dto.req.RecycleBinRecoverReqDTO;
 import com.daydream.shortlink.admin.dto.req.RecycleBinRemoveReqDTO;
 import com.daydream.shortlink.admin.dto.req.RecycleBinSaveReqDTO;
-import com.daydream.shortlink.admin.remote.dto.req.ShortLinkCreateReqDTO;
-import com.daydream.shortlink.admin.remote.dto.req.ShortLinkPageReqDTO;
-import com.daydream.shortlink.admin.remote.dto.req.ShortLinkRecycleBinPageReqDTO;
-import com.daydream.shortlink.admin.remote.dto.req.ShortLinkUpdateReqDTO;
+import com.daydream.shortlink.admin.remote.dto.req.*;
 import com.daydream.shortlink.admin.remote.dto.resp.ShortLinkCreateRespDTO;
 import com.daydream.shortlink.admin.remote.dto.resp.ShortLinkGroupCountQueryRespDTO;
 import com.daydream.shortlink.admin.remote.dto.resp.ShortLinkPageRespDTO;
+import com.daydream.shortlink.admin.remote.dto.resp.ShortLinkStatsRespDTO;
 
 import java.util.HashMap;
 import java.util.List;
@@ -129,5 +128,17 @@ public interface ShortLinkRemoteService {
      */
     default void removeRecycleBin(RecycleBinRemoveReqDTO requestParam) {
         HttpUtil.post("http://127.0.0.1:8001/api/short-link/v1/recycle-bin/remove", JSON.toJSONString(requestParam));
+    }
+
+    /**
+     * 访问单个短链接指定时间内监控数据
+     *
+     * @param requestParam 访问短链接监控请求参数
+     * @return 短链接监控信息
+     */
+    default Result<ShortLinkStatsRespDTO> oneShortLinkStats(ShortLinkStatsReqDTO requestParam) {
+        String resultBodyStr = HttpUtil.get("http://127.0.0.1:8001/api/short-link/v1/stats", BeanUtil.beanToMap(requestParam));
+        return JSON.parseObject(resultBodyStr, new TypeReference<>() {
+        });
     }
 }
