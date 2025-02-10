@@ -17,12 +17,11 @@ import com.daydream.shortlink.project.common.convention.exception.ClientExceptio
 import com.daydream.shortlink.project.common.convention.exception.ServiceException;
 import com.daydream.shortlink.project.dao.entity.*;
 import com.daydream.shortlink.project.dao.mapper.*;
+import com.daydream.shortlink.project.dto.req.ShortLinkBatchCreateReqDTO;
 import com.daydream.shortlink.project.dto.req.ShortLinkCreateReqDTO;
 import com.daydream.shortlink.project.dto.req.ShortLinkPageReqDTO;
 import com.daydream.shortlink.project.dto.req.ShortLinkUpdateReqDTO;
-import com.daydream.shortlink.project.dto.resp.ShortLinkCreateRespDTO;
-import com.daydream.shortlink.project.dto.resp.ShortLinkGroupCountQueryRespDTO;
-import com.daydream.shortlink.project.dto.resp.ShortLinkPageRespDTO;
+import com.daydream.shortlink.project.dto.resp.*;
 import com.daydream.shortlink.project.service.ShortLinkService;
 import com.daydream.shortlink.project.toolkit.HashUtil;
 import com.daydream.shortlink.project.toolkit.LinkUtil;
@@ -33,6 +32,7 @@ import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import lombok.RequiredArgsConstructor;
 import lombok.SneakyThrows;
+import lombok.extern.slf4j.Slf4j;
 import org.jsoup.Jsoup;
 import org.jsoup.nodes.Document;
 import org.jsoup.nodes.Element;
@@ -60,6 +60,7 @@ import static com.daydream.shortlink.project.common.enums.VailDateTypeEnum.PERMA
  * Description
  * Date 2025/1/10 16:15
  */
+@Slf4j
 @Service
 @RequiredArgsConstructor
 public class ShortLinkServiceImpl extends ServiceImpl<ShortLinkMapper, ShortLinkDO> implements ShortLinkService {
@@ -251,6 +252,32 @@ public class ShortLinkServiceImpl extends ServiceImpl<ShortLinkMapper, ShortLink
         } finally {
             lock.unlock();
         }
+    }
+
+    @Override
+    public ShortLinkBatchCreateRespDTO batchCreateShortLink(ShortLinkBatchCreateReqDTO requestParam) {
+        List<String> originUrls = requestParam.getOriginUrls();
+        List<String> describes = requestParam.getDescribes();
+        List<ShortLinkBaseInfoRespDTO> result = new ArrayList<>();
+        for (int i = 0; i < originUrls.size(); i++) {
+            ShortLinkCreateReqDTO shortLinkCreateReqDTO = BeanUtil.toBean(requestParam, ShortLinkCreateReqDTO.class);
+            shortLinkCreateReqDTO.setOriginUrl(originUrls.get(i));
+            shortLinkCreateReqDTO.setDescribe(describes.get(i));
+            try {
+                ShortLinkCreateRespDTO shortLinkCreateRespDTO = createShortLink(shortLinkCreateReqDTO);
+                result.add(ShortLinkBaseInfoRespDTO.builder()
+                        .describe(shortLinkCreateReqDTO.getDescribe())
+                        .originUrl(shortLinkCreateReqDTO.getOriginUrl())
+                        .fullShortUrl(shortLinkCreateRespDTO.getFullShortUrl())
+                        .build());
+            } catch (Throwable ex) {
+                log.error("批量创建短链接失败，原始参数：{}", originUrls.get(i));
+            }
+        }
+        return ShortLinkBatchCreateRespDTO.builder()
+                .total(result.size())
+                .baseLinkInfos(result)
+                .build();
     }
 
     private String generateSuffix(ShortLinkCreateReqDTO shortLinkCreateReqDTO) {

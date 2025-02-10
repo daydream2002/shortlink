@@ -3,9 +3,11 @@ package com.daydream.shortlink.project.service;
 import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.baomidou.mybatisplus.extension.service.IService;
 import com.daydream.shortlink.project.dao.entity.ShortLinkDO;
+import com.daydream.shortlink.project.dto.req.ShortLinkBatchCreateReqDTO;
 import com.daydream.shortlink.project.dto.req.ShortLinkCreateReqDTO;
 import com.daydream.shortlink.project.dto.req.ShortLinkPageReqDTO;
 import com.daydream.shortlink.project.dto.req.ShortLinkUpdateReqDTO;
+import com.daydream.shortlink.project.dto.resp.ShortLinkBatchCreateRespDTO;
 import com.daydream.shortlink.project.dto.resp.ShortLinkCreateRespDTO;
 import com.daydream.shortlink.project.dto.resp.ShortLinkGroupCountQueryRespDTO;
 import com.daydream.shortlink.project.dto.resp.ShortLinkPageRespDTO;
@@ -31,4 +33,12 @@ public interface ShortLinkService extends IService<ShortLinkDO> {
     void updateShortLink(ShortLinkUpdateReqDTO requestParam);
 
     void restoreUrl(String shortUri, ServletRequest request, ServletResponse response);
+     /**
+     * 批量创建短链接
+     *
+     * @param requestParam 批量创建短链接请求参数
+     * @return 批量创建短链接返回参数
+     */
+    ShortLinkBatchCreateRespDTO batchCreateShortLink(ShortLinkBatchCreateReqDTO requestParam);
+
 }
