@@ -15,6 +15,7 @@ import com.baomidou.mybatisplus.core.toolkit.Wrappers;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import com.daydream.shortlink.project.common.convention.exception.ClientException;
 import com.daydream.shortlink.project.common.convention.exception.ServiceException;
+import com.daydream.shortlink.project.common.enums.VailDateTypeEnum;
 import com.daydream.shortlink.project.dao.entity.*;
 import com.daydream.shortlink.project.dao.mapper.*;
 import com.daydream.shortlink.project.dto.req.ShortLinkBatchCreateReqDTO;
@@ -182,7 +183,15 @@ public class ShortLinkServiceImpl extends ServiceImpl<ShortLinkMapper, ShortLink
             this.remove(updateWrapper);
             this.save(shortLinkDO);
         }
-
+        if (!Objects.equals(hasShortLinkDO.getValidDateType(), requestParam.getValidDateType())
+                || !Objects.equals(hasShortLinkDO.getValidDate(), requestParam.getValidDate())) {
+            stringRedisTemplate.delete(String.format(GOTO_SHORT_LINK_KEY, requestParam.getFullShortUrl()));
+            if (hasShortLinkDO.getValidDate() != null && hasShortLinkDO.getValidDate().before(new Date())) {
+                if (Objects.equals(requestParam.getValidDateType(), VailDateTypeEnum.PERMANENT.getType()) || requestParam.getValidDate().after(new Date())) {
+                    stringRedisTemplate.delete(String.format(GOTO_IS_NULL_SHORT_LINK_KEY, requestParam.getFullShortUrl()));
+                }
+            }
+        }
     }
 
     @Override
