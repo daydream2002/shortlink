@@ -10,3 +10,6 @@ spring:
     redis:
       host: localhost
       port: 6379
+short-link:
+  group:
+    max-num: 20

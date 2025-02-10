@@ -1,9 +1,11 @@
 package com.daydream.shortlink.admin.service.impl;
 
 import cn.hutool.core.bean.BeanUtil;
+import cn.hutool.core.collection.CollUtil;
 import com.baomidou.mybatisplus.core.toolkit.Wrappers;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import com.daydream.shortlink.admin.common.biz.user.UserContext;
+import com.daydream.shortlink.admin.common.convention.exception.ClientException;
 import com.daydream.shortlink.admin.common.convention.result.Result;
 import com.daydream.shortlink.admin.common.database.BaseDO;
 import com.daydream.shortlink.admin.dao.entity.GroupDO;
@@ -15,10 +17,17 @@ import com.daydream.shortlink.admin.remote.ShortLinkRemoteService;
 import com.daydream.shortlink.admin.remote.dto.resp.ShortLinkGroupCountQueryRespDTO;
 import com.daydream.shortlink.admin.service.GroupService;
 import com.daydream.shortlink.admin.toolkit.RandomGenerator;
+import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
+import org.redisson.api.RLock;
+import org.redisson.api.RedissonClient;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
 import java.util.Optional;
+
+import static com.daydream.shortlink.admin.common.constant.RedisCacheConstant.LOCK_GROUP_CREATE_KEY;
 
 /**
  * Author daydream
@@ -26,12 +35,18 @@ import java.util.Optional;
  * Date 2025/1/9 17:34
  */
 @Service
+@Slf4j
+@RequiredArgsConstructor
 public class GroupServiceImpl extends ServiceImpl<GroupMapper, GroupDO> implements GroupService {
     /**
      * 后续重构为 SpringCloud Feign 调用
      */
     ShortLinkRemoteService shortLinkRemoteService = new ShortLinkRemoteService() {
     };
+    private final RedissonClient redissonClient;
+
+    @Value("${short-link.group.max-num}")
+    private Integer groupMaxNum;
 
     @Override
     public void saveGroup(String groupName) {
@@ -40,17 +55,29 @@ public class GroupServiceImpl extends ServiceImpl<GroupMapper, GroupDO> implemen
 
     @Override
     public void saveGroup(String username, String GroupName) {
-        String gid;
-        do {
-            gid = RandomGenerator.generateRandom();
-        } while (!hasGid(username, gid));
-        GroupDO groupDO = GroupDO.builder()
-                .gid(gid)
-                .sortOrder(0)
-                .username(username)
-                .name(GroupName)
-                .build();
-        save(groupDO);
+        RLock lock = redissonClient.getLock(String.format(LOCK_GROUP_CREATE_KEY, username));
+        lock.lock();
+        try {
+            List<GroupDO> groupDOList = list(Wrappers.lambdaQuery(GroupDO.class)
+                    .eq(GroupDO::getUsername, username)
+                    .eq(GroupDO::getDelFlag, 0));
+            if (CollUtil.isNotEmpty(groupDOList) && groupDOList.size() == groupMaxNum) {
+                throw new ClientException(String.format("已超出最大分组数：%d", groupMaxNum));
+            }
+            String gid;
+            do {
+                gid = RandomGenerator.generateRandom();
+            } while (!hasGid(username, gid));
+            GroupDO groupDO = GroupDO.builder()
+                    .gid(gid)
+                    .sortOrder(0)
+                    .username(username)
+                    .name(GroupName)
+                    .build();
+            save(groupDO);
+        } finally {
+            lock.unlock();
+        }
     }
 
     @Override
