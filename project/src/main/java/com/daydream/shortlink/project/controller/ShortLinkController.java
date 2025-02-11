@@ -1,5 +1,6 @@
 package com.daydream.shortlink.project.controller;
 
+import com.alibaba.csp.sentinel.annotation.SentinelResource;
 import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.daydream.shortlink.project.common.convention.result.Result;
 import com.daydream.shortlink.project.common.convention.result.Results;
@@ -11,6 +12,7 @@ import com.daydream.shortlink.project.dto.resp.ShortLinkBatchCreateRespDTO;
 import com.daydream.shortlink.project.dto.resp.ShortLinkCreateRespDTO;
 import com.daydream.shortlink.project.dto.resp.ShortLinkGroupCountQueryRespDTO;
 import com.daydream.shortlink.project.dto.resp.ShortLinkPageRespDTO;
+import com.daydream.shortlink.project.handler.CustomBlockHandler;
 import com.daydream.shortlink.project.service.ShortLinkService;
 import jakarta.servlet.ServletRequest;
 import jakarta.servlet.ServletResponse;
@@ -33,6 +35,11 @@ public class ShortLinkController {
      * 创建短链接
      */
     @PostMapping("/api/short-link/v1/create")
+    @SentinelResource(
+            value = "create_short-link",
+            blockHandler = "createShortLinkBlockHandlerMethod",
+            blockHandlerClass = CustomBlockHandler.class
+    )
     public Result<ShortLinkCreateRespDTO> createShortLink(@RequestBody ShortLinkCreateReqDTO shortLinkCreateReqDTO) {
         return Results.success(shortLinkService.createShortLink(shortLinkCreateReqDTO));
     }
@@ -66,6 +73,7 @@ public class ShortLinkController {
     public void restoreUrl(@PathVariable("short-uri") String shortUri, ServletRequest request, ServletResponse response) {
         shortLinkService.restoreUrl(shortUri, request, response);
     }
+
     /**
      * 批量创建短链接
      */
