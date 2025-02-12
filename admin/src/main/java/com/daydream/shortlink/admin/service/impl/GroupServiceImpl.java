@@ -13,7 +13,7 @@ import com.daydream.shortlink.admin.dao.mapper.GroupMapper;
 import com.daydream.shortlink.admin.dto.req.ShortLinkGroupSortReqDTO;
 import com.daydream.shortlink.admin.dto.req.ShortLinkGroupUpdateReqDTO;
 import com.daydream.shortlink.admin.dto.resp.ShortLinkGroupRespDTO;
-import com.daydream.shortlink.admin.remote.ShortLinkRemoteService;
+import com.daydream.shortlink.admin.remote.ShortLinkActualRemoteService;
 import com.daydream.shortlink.admin.remote.dto.resp.ShortLinkGroupCountQueryRespDTO;
 import com.daydream.shortlink.admin.service.GroupService;
 import com.daydream.shortlink.admin.toolkit.RandomGenerator;
@@ -38,12 +38,9 @@ import static com.daydream.shortlink.admin.common.constant.RedisCacheConstant.LO
 @Slf4j
 @RequiredArgsConstructor
 public class GroupServiceImpl extends ServiceImpl<GroupMapper, GroupDO> implements GroupService {
-    /**
-     * 后续重构为 SpringCloud Feign 调用
-     */
-    ShortLinkRemoteService shortLinkRemoteService = new ShortLinkRemoteService() {
-    };
+
     private final RedissonClient redissonClient;
+    private final ShortLinkActualRemoteService shortLinkActualRemoteService;
 
     @Value("${short-link.group.max-num}")
     private Integer groupMaxNum;
@@ -86,7 +83,7 @@ public class GroupServiceImpl extends ServiceImpl<GroupMapper, GroupDO> implemen
                 .eq(GroupDO::getUsername, UserContext.getUsername())
                 .eq(GroupDO::getDelFlag, 0)
                 .orderByDesc(GroupDO::getSortOrder, BaseDO::getUpdateTime));
-        Result<List<ShortLinkGroupCountQueryRespDTO>> listResult = shortLinkRemoteService
+        Result<List<ShortLinkGroupCountQueryRespDTO>> listResult = shortLinkActualRemoteService
                 .listGroupShortLinkCount(list.stream().map(GroupDO::getGid).toList());
         List<ShortLinkGroupRespDTO> shortLinkGroupRespDTOList = BeanUtil.copyToList(list, ShortLinkGroupRespDTO.class);
         shortLinkGroupRespDTOList.forEach(item -> {
