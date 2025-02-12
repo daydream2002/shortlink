@@ -113,11 +113,7 @@ public class ShortLinkServiceImpl extends ServiceImpl<ShortLinkMapper, ShortLink
             baseMapper.insert(shortLinkDO);
             shortLinkGotoMapper.insert(linkGotoDO);
         } catch (DuplicateKeyException e) {
-            ShortLinkDO one = getOne(Wrappers.lambdaQuery(ShortLinkDO.class)
-                    .eq(ShortLinkDO::getFullShortUrl, shortLinkDO.getFullShortUrl()));
-            if (one != null) {
-                throw new ServiceException("短链接生成重复");
-            }
+            throw new ServiceException(String.format("短链接：%s 生成重复", shortLinkDO.getFullShortUrl()));
         }
         stringRedisTemplate.opsForValue().set(
                 String.format(GOTO_SHORT_LINK_KEY, shortLinkDO.getFullShortUrl()),
