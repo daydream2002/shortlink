@@ -22,9 +22,9 @@ import java.util.List;
  * Description
  * Date 2025/1/16 10:50
  */
-@Service
+@Service(value = "recycleBinServiceImplByAdmin")
 @RequiredArgsConstructor
-public class recycleBinServiceImpl implements recycleBinService {
+public class RecycleBinServiceImpl implements recycleBinService {
     private final GroupMapper groupMapper;
     private final ShortLinkActualRemoteService shortLinkActualRemoteService;
 
