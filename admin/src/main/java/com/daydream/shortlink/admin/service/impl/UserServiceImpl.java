@@ -67,26 +67,23 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, UserDO> implements 
     }
 
     @Override
-    public void register(UserRegisterReqDTO userRegisterReqDTO) {
-        if (!hasUsername(userRegisterReqDTO.getUsername())) {
+    public void register(UserRegisterReqDTO requestParam) {
+        if (!hasUsername(requestParam.getUsername())) {
             throw new ClientException(USER_NAME_EXIST);
         }
-        RLock lock = redissonClient.getLock(LOCK_USER_REGISTER_KEY + userRegisterReqDTO.getUsername());
-        try {
-            if (lock.tryLock()) {
-                try {
-                    boolean saved = this.save(BeanUtil.toBean(userRegisterReqDTO, UserDO.class));
-                    if (!saved) {
-                        throw new ClientException(USER_SAVE_ERROR);
-                    }
-                } catch (DuplicateKeyException e) {
-                    throw new ClientException(USER_EXIST);
-                }
-                userRegisterCachePenetrationBloomFilter.add(userRegisterReqDTO.getUsername());
-                groupService.saveGroup(userRegisterReqDTO.getUsername(), "默认分组");
-                return;
-            }
+        RLock lock = redissonClient.getLock(LOCK_USER_REGISTER_KEY + requestParam.getUsername());
+        if (!lock.tryLock()) {
             throw new ClientException(USER_NAME_EXIST);
+        }
+        try {
+            int inserted = baseMapper.insert(BeanUtil.toBean(requestParam, UserDO.class));
+            if (inserted < 1) {
+                throw new ClientException(USER_SAVE_ERROR);
+            }
+            userRegisterCachePenetrationBloomFilter.add(requestParam.getUsername());
+            groupService.saveGroup(requestParam.getUsername(), "默认分组");
+        } catch (DuplicateKeyException ex) {
+            throw new ClientException(USER_EXIST);
         } finally {
             lock.unlock();
         }
