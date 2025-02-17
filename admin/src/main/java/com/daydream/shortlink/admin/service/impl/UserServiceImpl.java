@@ -8,6 +8,7 @@ import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.core.conditions.update.LambdaUpdateWrapper;
 import com.baomidou.mybatisplus.core.toolkit.Wrappers;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
+import com.daydream.shortlink.admin.common.biz.user.UserContext;
 import com.daydream.shortlink.admin.common.convention.exception.ClientException;
 import com.daydream.shortlink.admin.common.convention.exception.ServiceException;
 import com.daydream.shortlink.admin.common.enums.UserErrorCodeEnum;
@@ -30,6 +31,7 @@ import org.springframework.data.redis.core.StringRedisTemplate;
 import org.springframework.stereotype.Service;
 
 import java.util.Map;
+import java.util.Objects;
 import java.util.concurrent.TimeUnit;
 
 import static com.daydream.shortlink.admin.common.constant.RedisCacheConstant.LOCK_USER_REGISTER_KEY;
@@ -91,6 +93,9 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, UserDO> implements 
 
     @Override
     public void update(UserUpdateReqDTO userUpdateReqDTO) {
+        if (!Objects.equals(userUpdateReqDTO.getUsername(), UserContext.getUsername())) {
+            throw new ClientException("当前登录用户修改请求异常");
+        }
         this.update(BeanUtil.toBean(userUpdateReqDTO, UserDO.class),
                 new LambdaUpdateWrapper<>(UserDO.class)
                         .eq(UserDO::getUsername, userUpdateReqDTO.getUsername()));
