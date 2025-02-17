@@ -20,6 +20,7 @@ import static com.daydream.shortlink.project.common.constant.RedisKeyConstant.DE
 @Component
 @RequiredArgsConstructor
 @Slf4j
+@Deprecated
 public class DelayShortLinkStatsConsumer implements InitializingBean {
 
     private final RedissonClient redissonClient;
@@ -66,6 +67,6 @@ public class DelayShortLinkStatsConsumer implements InitializingBean {
 
     @Override
     public void afterPropertiesSet() throws Exception {
-        onMessage();
+//        onMessage();
     }
 }
