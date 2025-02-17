@@ -17,6 +17,7 @@ import com.daydream.shortlink.project.dto.resp.ShortLinkStatsAccessRecordRespDTO
 import com.daydream.shortlink.project.dto.resp.ShortLinkStatsRespDTO;
 import com.daydream.shortlink.project.service.ShortLinkStatsService;
 import lombok.RequiredArgsConstructor;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RestController;
 
@@ -26,7 +27,6 @@ import org.springframework.web.bind.annotation.RestController;
 @RestController
 @RequiredArgsConstructor
 public class ShortLinkStatsController {
-
     private final ShortLinkStatsService shortLinkStatsService;
 
     /**
